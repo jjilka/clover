@@ -28,7 +28,7 @@ const OrderController=  class {
     addLineItem(lineItem, order_id, connection) {
         const lineItemPromise = new Promise((resolve, reject) => {
             connection.query(`INSERT INTO ${dbname}.LineItems (UUID, order_id, name, price, price_after_discount, tax_rate)
-            VALUES (?,?,?,?,?,?)`, [lineItem.uuid, order_id, lineItem.name, (lineItem.price * lineItem.quantity), lineItem.price, lineItem.tax_rate] , (err) => {
+            VALUES (?,?,?,?,?,?)`, [lineItem.uuid, order_id, lineItem.name, (lineItem.price * lineItem.quantity), (lineItem.price * lineItem.quantity), lineItem.tax_rate] , (err) => {
                 if(err)
                 {
                     reject({"result": "error", "message": err});
@@ -75,7 +75,6 @@ const OrderController=  class {
                 }
             });
         });
-
         return discountPromise;
     }
 
@@ -115,10 +114,10 @@ const OrderController=  class {
 
     getOrderLineItem(order_id) {
         const lineItemPromise = new Promise((resolve, reject) => {
-            database.query(`SELECT * FROM ${dbname}.LineItems where order_id = '${order_id}';`, (err, result, fields) => {
+            database.query(`SELECT uuid, name, price, price_after_discount, tax_rate FROM ${dbname}.LineItems where order_id = '${order_id}';`, (err, result, fields) => {
                 if(err)
                 {
-                    console.log(err);
+                    reject(err);
                 }
                 else
                 {
@@ -133,10 +132,10 @@ const OrderController=  class {
     getOrderDiscount(order_id) {
 
         const discountPromise = new Promise((resolve, reject) => {
-            database.query(`SELECT * FROM ${dbname}.Discounts where order_id = '${order_id}';`, (err, result, fields) => {
+            database.query(`SELECT uuid, name, type, amount, apply_to FROM ${dbname}.Discounts where order_id = '${order_id}';`, (err, result, fields) => {
                 if(err)
                 {
-                    console.log(err);
+                    reject(err);
                 }
                 else
                 {
