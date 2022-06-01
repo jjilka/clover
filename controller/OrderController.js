@@ -132,7 +132,7 @@ const OrderController=  class {
     getOrderDiscount(order_id) {
 
         const discountPromise = new Promise((resolve, reject) => {
-            database.query(`SELECT uuid, name, type, amount, apply_to FROM ${dbname}.Discounts where order_id = '${order_id}';`, (err, result, fields) => {
+            database.query(`SELECT uuid, name, type, amount, apply_to FROM ${dbname}.Discounts where order_id = '${order_id}' ORDER BY created_at ASC;`, (err, result, fields) => {
                 if(err)
                 {
                     reject(err);
@@ -158,7 +158,7 @@ const OrderController=  class {
         }
         let orderLineItems = await this.getOrderLineItem(order_id);
         let orderDiscounts = await this.getOrderDiscount(order_id);
-        let wholeOrderDiscounts = [];
+        let wholeOrderDiscount = null;
         let lineItemDiscounts = [];
         let lineItemMap = new Map();
 
@@ -167,7 +167,8 @@ const OrderController=  class {
         {
             if(orderDiscounts[i].apply_to == order_id)
             {
-                wholeOrderDiscounts.push(orderDiscounts[i]);
+                //only take the last order discount
+                wholeOrderDiscount = orderDiscounts[i];
             }
             else
             {
@@ -209,19 +210,21 @@ const OrderController=  class {
         }
         
         //apply whole order discount
-        wholeOrderDiscounts.forEach(discount => {
-            if(discount.type == "amount")
+        //there whill be only one whole order discount
+        if(wholeOrderDiscount)
+        {
+            if(wholeOrderDiscount.type == "amount")
             {
-                total = total - discount.amount;
-                tax = tax - (discount.amount * total_tax_rate);
+                total = total - wholeOrderDiscount.amount;
+                tax = tax - (wholeOrderDiscount.amount * total_tax_rate);
             }
-            else if(discount.type == "percent")
+            else if(wholeOrderDiscount.type == "percent")
             {
-                total = total  - (totalBeforeDiscount * discount.amount);
-                totalBeforeDiscount = totalBeforeDiscount - (totalBeforeDiscount * discount.amount);
-                tax = tax  - (tax * discount.amount);
+                total = total  - (totalBeforeDiscount * wholeOrderDiscount.amount);
+                totalBeforeDiscount = totalBeforeDiscount - (totalBeforeDiscount * wholeOrderDiscount.amount);
+                tax = tax  - (tax * wholeOrderDiscount.amount);
             }
-        });
+        };
 
         orderLineItems.forEach(orderLineItem => delete orderLineItem["price_after_discount"]);
         order.line_items = orderLineItems;
@@ -234,7 +237,6 @@ const OrderController=  class {
 
         //make sure total is not less then zero
         order.total = Math.ceil(((total > 0 ? total : 0) + order.tax));
-        console.log("calculated")
         return order;
         
     }
