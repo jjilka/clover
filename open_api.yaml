@@ -86,7 +86,10 @@ paths:
 components:
   schemas:
     Error:
-      type: string
+      type: object
+      properties:
+        result: string
+        message: string
     Order:
       type: object
       properties:
