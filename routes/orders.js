@@ -134,10 +134,7 @@ router.get('/:uuid', async function(req, res, next) {
         {
             next(err)
         }
-        
     });
-    
-    
 });
 
 
