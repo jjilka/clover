@@ -1,0 +1,164 @@
+openapi: "3.0.0"
+info:
+  title: Clover Order API
+  description: API to build an order for a customer
+  version: "2.0"
+  termsOfService: http://www.bypassmobile.com/terms/
+paths:
+  /orders:
+    post:
+      summary: Creates a new order based on the body of the payload.
+      description: Creates a new order based on the body of the payload.
+      tags:
+        - Orders
+      requestBody:
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#components/schemas/Order'
+      responses:
+        200:
+          description: 'The order creation was successful'
+          content:
+            'application/json':
+              schema:
+                $ref: '#components/schemas/Order'
+  /orders/{uuid}:
+    get:
+      summary: Returns the order for the requested uuid
+      description: |
+        retrieves the order at for the specified uuid.
+      tags:
+        - Orders
+      responses:
+        200:
+          description: The successful retrieval and return of a given order
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Order'
+      parameters:
+        - name: uuid
+          in: path
+          description: The uuid of the order that should be updated
+          required: true
+          schema:
+            type: string
+    put:
+      summary: Updates an order with new information
+      description: |
+        updates or changes elements of and order, including adding line items or discounts only elements that should be changed should be included in the payload.
+      tags:
+        - Orders
+      requestBody:
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        200:
+          description: The successful response for updating an order.
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Order'
+        404:
+          description: Unable to find order
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: An error occured
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+        - name: uuid
+          in: path
+          description: The uuid of the order that should be updated
+          required: true
+          schema:
+            type: string
+components:
+  schemas:
+    Error:
+      type: string
+    Order:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: |
+            The globally unique uuid for the order
+        line_items:
+          type: array
+          description: |
+            The array of line items that make up this order
+          items:
+            $ref: '#/components/schemas/LineItem'
+        discounts:
+          type: array
+          description: |
+            The array of discounts that should be applied to this order
+          items:
+            $ref: '#/components/schemas/Discount'
+        tax_total:
+          type: number
+          description: |
+            The computed tax total for the order
+        total:
+          type: number
+          description: |
+            The computed total for the order
+    LineItem:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: |
+            A globally unique identifier for the line item.
+        name:
+          type: string
+          description: |
+            The name of the item that is part of the order.
+        quantity:
+          type: number
+          description: |
+            The number of items to
+        price:
+          type: number
+          description: |
+            The price of the item
+        tax_rate:
+          type: number
+          format: double
+          description: |
+            The rate that this item should be taxed. e.g. 5% would be 0.05
+    Discount:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: |
+            A globally unique identifier for this discounts
+        name:
+          type: string
+          description: |
+            The name of this discount, e.g. half-off, $1 off, member reward
+        type:
+          type: string
+          enum: ["percent", "amount"]
+          description: |
+            The type of discount to apply either percent or amount.
+        amount:
+          type: number
+          description: |
+            The amount of discount to apply, can be either a percent: 5% would be 0.05 or an amount: $1 would be 1
+        apply_to:
+          type: string
+          description: |
+            The uuid to apply the discount to. This could be for the order or a single line item.
