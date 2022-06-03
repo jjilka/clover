@@ -221,7 +221,6 @@ const OrderController=  class {
             else if(wholeOrderDiscount.type == "percent")
             {
                 total = total  - (totalBeforeDiscount * wholeOrderDiscount.amount);
-                totalBeforeDiscount = totalBeforeDiscount - (totalBeforeDiscount * wholeOrderDiscount.amount);
                 tax = tax  - (tax * wholeOrderDiscount.amount);
             }
         };
