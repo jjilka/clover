@@ -88,8 +88,14 @@ components:
     Error:
       type: object
       properties:
-        result: string
-        message: string
+        result: 
+          type: string
+          description: |
+              the error code
+        message:
+          type: string
+          decription: the error message
+
     Order:
       type: object
       properties:
